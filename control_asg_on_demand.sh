@@ -16,12 +16,14 @@ function getData() {
 	for ASG_Name in `echo $DATA_JSON | jq -r '.Name'`; do
 		record_t="echo '$DATA_JSON' | jq '. | select (.Name == \"$ASG_Name\")'"
 		record=`eval $record_t`
-		OS=`getOS $ASG_Name`
+		#OS=`getOS $ASG_Name`
+		OS="bionic"
 		MIN["$ASG_Name"]=`echo $record | jq -r ".Min"`
 		MAX["$ASG_Name"]=`echo $record | jq -r ".Max"`
 		DESIRED["$ASG_Name"]=`echo $record | jq -r ".Desired"`
 		LOCATION["$ASG_Name"]=`echo $record | jq -r ".FZ_LOCATION"`
-		line="$ASG_Name - $OS - `echo $record | jq -r ".FZ_LOCATION"`"
+		#line="$ASG_Name - $OS - `echo $record | jq -r ".FZ_LOCATION"`"
+		line="$ASG_Name - $OS - `echo ${REGION,,}`"
 		LABELS+=("$line")
 	done
 }
