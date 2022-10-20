@@ -1,0 +1,35 @@
+thread_cnt: 1
+
+
+db:
+   host: db_host_or_ip
+   port: 1234
+   database: dbname
+   user: dbuser
+   password: dbpassword
+   max_column_size: 1000
+   pool_size: 1
+
+
+barcoder:
+   root_dir: /nfs/fax_files/
+
+zbar: ''
+
+
+consumer:
+   bootstrap.servers: kafka_host
+   group.id: barcode
+   topics:
+   - fax-topic
+   auto.offset.reset: earliest
+   enable.auto.commit: true
+   timeout: 1.0
+   schema_path: fax.avsc
+   
+   
+producer:
+   bootstrap.servers: kafka_host
+   topic: topicx
+   schema_path: faxbarcode.avsc   
+ 

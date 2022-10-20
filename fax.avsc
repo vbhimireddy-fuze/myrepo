@@ -1,0 +1,223 @@
+{
+  "type": "record",
+  "name": "FaxEvent",
+  "namespace": "com._8x8.vo.message.event",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "customerId",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "faxId",
+      "type": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "subject",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "fileName",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "subscriberId",
+      "type": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "from",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "to",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "remotePartyId",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "state",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "cause",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": {
+            "type": "string"
+          }
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "sentPage",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "receivedPage",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "retryCount",
+      "type": [
+        "null",
+        "int"
+      ],
+      "default": null
+    },
+    {
+      "name": "startTimestamp",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "updateTimestamp",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "direction",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "hqFax",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "countryCode",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "fromDid",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "toDid",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "subscriptionId",
+      "type": [
+        "null",
+        {
+          "type": "string"
+        }
+      ],
+      "default": null
+    }
+  ]
+}
+
