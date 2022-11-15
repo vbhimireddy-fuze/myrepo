@@ -37,11 +37,12 @@ class AvroEnc:
         self.encoder = avro.io.BinaryEncoder(self.buf)
         
     def encode(self, value):
+        self.buf.seek(5)
         self.writer.write(value, self.encoder)
         values = self.buf.getvalue()
         self.buf.seek(0)
         self.buf.truncate(0)
-        return values        
+        return values    
 
 
 def init_log(): 

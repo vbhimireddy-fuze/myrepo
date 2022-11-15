@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 
 from barcodereader import CommonReader
 import pyzbar.pyzbar as pyzbar
@@ -14,6 +15,8 @@ class ZbarReader(CommonReader):
         self.conf = conf
     
     def add_codes(self, img, no: int, codes):
+        log.info("barcode scan started")
+        started = datetime.now()
         results = pyzbar.decode(img)
         log.info(f"{len(results)} codes were found at page:{no}")
         for result in results:
@@ -25,4 +28,7 @@ class ZbarReader(CommonReader):
             code = {"pageNo": no, "format": ty, "rawResult": val}
             log.info(code)
             codes.append(code)
-    
+        
+        ended = datetime.now()
+        duration = ended - started
+        log.info(f"barcode scan ended. Duration:{duration}")

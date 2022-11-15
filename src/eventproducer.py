@@ -30,10 +30,10 @@ class EventProducer:
     def send(self, faxid, fax):
         data = self.enc.encode(fax)
         size = len(data)
-        log.info(f"send faxid:{faxid}, fax:{fax}, size:{size}")
+        log.info(f"sending faxid:{faxid}, fax:{fax}, size:{size}")
         
         callback = CallBack(faxid)
-        self.producer.produce(self.topic, None, callback=callback.done)
+        self.producer.produce(self.topic, key=faxid, value=data, callback=callback.done)
         self.producer.flush()
 
 

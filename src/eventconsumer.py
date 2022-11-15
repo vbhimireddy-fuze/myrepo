@@ -19,7 +19,7 @@ class ShutDown:
         signal.signal(signal.SIGTERM, self.killit)
     
     def killit(self, *args):
-        log.warn("killit")
+        log.warn("received kill signal and should stop this application")
         self.need_to_kill = True
         
 
@@ -32,9 +32,8 @@ class EventConsumer:
         self.shutdown = shutdown
         
         self.conf = conf
-        
         self.timeout = conf["timeout"]
-        
+        self.is_confluent = conf["is_confluent"]
         self.handler = handler
         schema_path = conf['schema_path']
         
@@ -76,16 +75,20 @@ class EventConsumer:
                 log.error(f"can not read event from [topic:{msg.topic()}, partition:{msg.partition()}, offset:{msg.offset() }, key:{key}]")
                 continue
             
-            fax = self.dec.decode_confluent(fax)
+            if self.is_confluent:
+                fax = self.dec.decode_confluent(fax)
+            else: 
+                fax = self.dec.decode(fax)
             if fax == None:
                 log.error(f"can not decode event from [topic:{msg.topic()}, partition:{msg.partition()}, offset:{msg.offset() }, key:{key}]")
                 continue
             
             log.info(f'Received [topic:{msg.topic()}, partition:{msg.partition()}, offset:{msg.offset() }, key:{key}], event:{fax}')
             self.handler.handle(fax)
-                
+        
+        log.info("closing consumer")                
         self.consumer.close()
-        log.info("run end")
+        log.info(f"run end. total processed message:{i}")
 
     def decode(self, data):
             return data.decode("utf-8") if isinstance(data, bytes) else str(data)

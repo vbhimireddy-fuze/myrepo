@@ -3,6 +3,7 @@ import yaml
 import logging
 import logging.config
 import threading
+import getpass
 
 import os
 import sys
@@ -17,13 +18,24 @@ from zbarreader import ZbarReader
 
     
 def main():
-    print("main starts")
+    print("main starts.")
+    print(f"pwd:{os.getcwd()}")
+    
     global log
     env = ""  # default
     if len(sys.argv) > 1:
         env = sys.argv[1]
+        print(f"given env is {env}")
+    else:
+        print("use default env")    
         
     conf = single_confutil(env).conf
+    
+    user_id = conf['user_id']
+    if not check_user(user_id):
+        print(f'Please try with id:{user_id}')
+        sys.exit(1)
+    
     log = logging.getLogger(__name__)
     log.info("log is ready and started")
     
@@ -31,7 +43,7 @@ def main():
     shutdown = ShutDown()
     
     thread_cnt = conf["thread_cnt"]
-    log.info(f"thread_cnt:{thread_cnt}")
+    log.info(f"total thread_cnt:{thread_cnt}")
     ps = []
     for i in range(thread_cnt):
         log.info(f"new {i + 1}th process starts")
@@ -42,7 +54,15 @@ def main():
     for p in ps:
         p.join()
     log.info("End Barcode Application. Good Bye")        
+
     
+def check_user(idNeed):
+    myid = getpass.getuser()
+    if idNeed != myid:
+        print(f'your id should be :{idNeed} but it is {myid}')
+        return False
+    return True
+
          
 def new_task(conf, dao, shutdown):
     barcoder_conf = conf["barcoder"]
@@ -51,7 +71,8 @@ def new_task(conf, dao, shutdown):
     producer_conf = conf["producer"]
     producer = EventProducer(producer_conf)
     
-    hanlder = EventHandler(barcoder, dao, producer)
+    handler_conf = conf["handler"]
+    hanlder = EventHandler(handler_conf, barcoder, dao, producer)
     consumer_conf = conf["consumer"]
     consumer = EventConsumer(consumer_conf, hanlder, shutdown);
     

@@ -1,35 +1,36 @@
+user_id: ipbx # linux id which executes this program
 thread_cnt: 1
 
-
 db:
-   host: db_host_or_ip
-   port: 1234
-   database: dbname
+   host: db_host_or_ip # fax db ip or hostname
+   port: 1234 # fax db port
+   database: dbname # fax db name
    user: dbuser
    password: dbpassword
-   max_column_size: 1000
-   pool_size: 1
+   max_column_size: 50000 # max size of barcode field in t_fax
+   pool_size: 1 # db pool size
 
+handler:
+   start_time: 1665634474000 # fax startTime, any fax older than this will be ignored
 
 barcoder:
-   root_dir: /nfs/fax_files/
+   faxes_dir: /nfs/fax_files_root/ # fax root dir
 
-zbar: ''
+zbar: '' # resevered for future value for zbar
 
-
-consumer:
-   bootstrap.servers: kafka_host
-   group.id: barcode
+consumer: # see kafka document for technial detail
+   bootstrap.servers: kafka_host # kafka bootstrap url
+   group.id: barcode  # kafka
    topics:
-   - fax-topic
+   - fax_without_barcode # a topic which faxserver put event
    auto.offset.reset: earliest
    enable.auto.commit: true
    timeout: 1.0
-   schema_path: fax.avsc
-   
-   
-producer:
-   bootstrap.servers: kafka_host
-   topic: topicx
-   schema_path: faxbarcode.avsc   
+   schema_path: fax.avsc # for schema for this topic
+   is_confluent: true # true if this is confluent kafka
+      
+producer: # see kafka document for technial detail
+   bootstrap.servers: kafka_host # kafka bootstrap url
+   topic: fax_with_barcode # topic which cpass will receive
+   schema_path: faxbarcode2.avsc   # for schema for this topic
  

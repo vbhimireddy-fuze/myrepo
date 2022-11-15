@@ -3,6 +3,7 @@ import yaml
 import logging
 import logging.config
 import os
+import sys
 
 
 class ConfUtil:
@@ -12,9 +13,6 @@ class ConfUtil:
         self.done = False
         
         self.init_conf(conf_path)
-        if self.conf == None:
-            return
-        
         self.done = self.init_log(log_path)
    
     def is_good(self):
@@ -24,30 +22,22 @@ class ConfUtil:
         return self.conf    
         
     def init_conf(self, path):
-        print('read conf_path', path)
-        try:
-            self.conf = yaml.safe_load(self.__load_file(path))
-        except Exception as e:
-            print(e)
+        print(f'read config from:{path}')
+        self.conf = yaml.safe_load(self.__load_file(path))
+        
     
     def __load_file(self, path):
         if not path:
-            print('exit. empty path')
-            return
-        try:
-            with open(path, 'rt') as f:
-                return f.read()
-        except FileNotFoundError as e:
-            print(e)   
+            print('exit because path is empty')
+            sys.exit(1)
+        
+        with open(path, 'rt') as f:
+            return f.read()
             
     def init_log(self, path):
-        print('read log_path', path)
-        try:
-            config = yaml.safe_load(self.__load_file(path))
-            logging.config.dictConfig(config)
-        except Exception as e:
-            print(e)
-            return False
+        print(f'read log config from:{path}')
+        config = yaml.safe_load(self.__load_file(path))
+        logging.config.dictConfig(config)
         return True
     
 
