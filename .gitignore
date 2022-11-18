@@ -1,41 +1,18 @@
-*.log
-target/
-logs/
-local/
+# By default, ignore everything in project root...
+/*
 
-# IntelliJ project files
-*.iml
-*.iws
-*.ipr
-.idea/
+# ... and the following directories and subdirectories with these names
+**__pycache__/
+**barcode_service.egg-info/
+**.DS_Store/
 
-# eclipse project file
-.settings/
-.classpath
-.project
+# But don't ignore these directories
+!/src/
+!/resources/
 
-# NetBeans specific
-nbproject/private/
-build/
-nbbuild/
-dist/
-nbdist/
-nbactions.xml
-nb-configuration.xml
-
-
-# OS
-.DS_Store
-
-# Misc
-*.swp
-release.properties
-pom.xml.releaseBackup
-pom.xml.tag
-
-# more
-.metadata/
-.git/
-__pycache__/
-*.pyc
-
+# and don't ignore these specific files
+!/.gitignore
+!/README.md
+!/development_requirements.txt
+!/requirements.txt
+!/pyproject.toml

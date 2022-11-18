@@ -2,10 +2,10 @@ import logging
 import os
 import signal
 
-from eventhandler import *
+from barcode_service.eventhandler import *
 
 from confluent_kafka import Consumer
-from avroparser import *
+from barcode_service.avroparser import *
 
 
 class ShutDown:

@@ -1,8 +1,8 @@
-from avroparser import *
+from barcode_service.avroparser import *
 import logging
 from confluent_kafka import Producer
 
-from confutil import *
+from barcode_service.confutil import *
 
 
 class EventProducer:

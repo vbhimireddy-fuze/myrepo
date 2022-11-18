@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-from barcodereader import CommonReader
+from barcode_service.barcodereader import CommonReader
 import pyzbar.pyzbar as pyzbar
 
 

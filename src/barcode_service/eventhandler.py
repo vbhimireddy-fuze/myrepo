@@ -1,9 +1,9 @@
 import logging
 import os
 
-from barcodereader import *
-from eventproducer import *
-from faxdao import *
+from barcode_service.barcodereader import *
+from barcode_service.eventproducer import *
+from barcode_service.faxdao import *
 
 class EventHandler:
     

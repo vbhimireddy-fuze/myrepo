@@ -7,14 +7,14 @@ import getpass
 
 import os
 import sys
-from faxdao import *
-from barcodereader import *
-from eventhandler import *
-from eventconsumer import *
+from barcode_service.faxdao import *
+from barcode_service.barcodereader import *
+from barcode_service.eventhandler import *
+from barcode_service.eventconsumer import *
 
-from confutil import *
+from barcode_service.confutil import *
 
-from zbarreader import ZbarReader
+from barcode_service.zbarreader import ZbarReader
 
     
 def main():
