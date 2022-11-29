@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45.0"]
+requires = ["setuptools>=64.0", "pip>=21.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -27,10 +27,13 @@ dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 barcode_service = "barcode_service:main"
 
 [tool.setuptools]
-packages = ['barcode_service']
+packages = ['barcode_service', 'barcode_service.resources']
 
 [tool.setuptools.package-dir]
 "barcode_service" = "src/barcode_service"
+
+[tool.setuptools.package-data]
+"barcode_service.resources" = ["*.avsc"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = "requirements.txt" }
@@ -49,6 +52,7 @@ python_files = ["test_*.py"]
 
 [tool.coverage.run]
 source = ["src/barcode_service"]
+omit = ["src/barcode_service/__main__.py"]
 
 [tool.pylint]
 max-line-length = 360
@@ -62,4 +66,12 @@ disable = [
     "R0903", # (too-few-public-methods)
     "R0913", # (too-many-arguments)
     "W0105", # (pointless-string-statement)
+    "W1203", # (logging-fstring-interpolation)
+    "R0914", # (too-many-locals)
+    "R1702", # (too-many-nested-blocks)
+    "R0912", # (too-many-branches)
+    "R0915", # (too-many-statements)
+]
+enable = [
+    "W1201", # (logging-not-lazy)
 ]

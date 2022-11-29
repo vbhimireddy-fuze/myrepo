@@ -1,0 +1,32 @@
+version: 1
+disable_existing_loggers: true
+
+formatters:
+   simple:
+      format: '[%(asctime)s][%(name)s][%(lineno)d][%(threadName)s][%(levelname)s][%(message)s]'
+
+handlers:
+   file:
+      class: logging.FileHandler
+      level: DEBUG
+      formatter: simple
+      filename: barcode.log
+   console:
+      class : logging.StreamHandler
+      formatter: simple
+      level   : DEBUG
+      stream  : ext://sys.stdout
+
+root:
+   level: DEBUG
+   handlers:
+   - file
+   - console
+
+loggers:
+   barcode_service:
+      level: DEBUG
+      handlers:
+      - file
+      - console
+      propagate: no

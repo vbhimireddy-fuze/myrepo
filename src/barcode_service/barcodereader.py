@@ -1,49 +1,49 @@
+# coding=utf-8
 import logging
-import os
-from os.path import exists
+from abc import ABC
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Generator, Tuple
 
-import cv2
+_log = logging.getLogger(__name__)
+
+
+class BarcodeReaderException(ABC, Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+class FailedToProcessImageException(BarcodeReaderException):
+    def __init__(self) -> None:
+        super().__init__("Failed to process image")
+
+@dataclass
+class Barcode():
+    page_no: int
+    format: str
+    raw_result: str
 
 
 class BarcodeReader:
-    
-    def __init__(self, conf, reader):
-        global log
-        global faxes_dir
-        log = logging.getLogger(__name__)
-        self.conf = conf
-        self.reader = reader
-        faxes_dir = conf["faxes_dir"]
-        log.info(f"new BarcodeReader. NFS faxes_dir:{faxes_dir}")
-    
-    def read_barcode(self, path):
-        full_path = faxes_dir + path
-        log.info(f"read_barcode from full_path:{full_path}")
-        
-        if exists(full_path) == False:
-            log.error(f"file does not exist:{full_path} and it skips barcode scanning")
-            return []
-        
-        return self._read_barcode(full_path)
-        
-    def _read_barcode(self, full_path):
-        codes = []
-        ret, imgs = cv2.imreadmulti(full_path, [], cv2.IMREAD_REDUCED_COLOR_2)
-        if ret == False:
-            log.error(f"can not open image at:{full_path}")
-            return codes
-    
-        no = 0
-        size = len(imgs)
-        log.info(f"found {size} images at file:{full_path}")
-        for img in imgs:
-            no += 1
-            self.reader.add_codes(img, no, codes)
-        
-        return codes
-        
+    @dataclass
+    class BarcodeConfiguration:
+        faxes_location: Path = None
 
-class CommonReader:
-    
-    def add_codes(self, img, no: int, codes):
-        pass
+    def __init__(self, config: BarcodeConfiguration, barcode_extractor: Generator[Tuple[int, str, str], Path, None]) -> None:
+        self.__barcode_extractor = barcode_extractor
+        self.faxes_location: Path = config.faxes_location
+        _log.info(f"new BarcodeReader. NFS faxes_dir:{self.faxes_location}")
+
+    def read_barcode(self, file_location: Path) -> Tuple[Barcode]:
+        full_file_path = (self.faxes_location / file_location).absolute()
+
+        start_time = datetime.now()
+        bar_codes = tuple(
+            (Barcode(page_number, data_type, value) for (page_number, data_type, value) in self.__barcode_extractor(full_file_path))
+        )
+        end_time = datetime.now()
+        duration = end_time - start_time
+        _log.info(f"Barcode scan has ended. Duration [{duration}]")
+        _log.info(f"Found [{len(bar_codes)}] barcodes at file [{full_file_path}]")
+
+        return bar_codes

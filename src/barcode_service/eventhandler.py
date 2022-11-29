@@ -1,46 +1,50 @@
+# coding=utf-8
 import logging
-import os
+from pathlib import Path
+from typing import Callable
 
-from barcode_service.barcodereader import *
-from barcode_service.eventproducer import *
-from barcode_service.faxdao import *
+from mysql.connector import PoolError, DatabaseError
+
+from barcode_service.barcodereader import (BarcodeReader,
+                                           FailedToProcessImageException)
+from barcode_service.faxdao import AbstractDao, FaxDaoException
+
+_log = logging.getLogger(__name__)
+
 
 class EventHandler:
-    
-    def __init__(self, conf, barcoder, dao, producer):
-        global log
-        log = logging.getLogger(__name__)
-        log.info("new EventHandler")
-        self.conf = conf
-        self.start_time = conf['start_time']
-        log.info(f"start_time:{self.start_time}")
-        self.barcoder = barcoder
-        self.dao = dao
-        self.producer = producer
-    
-    
-    def handle(self, fax):
-        faxid = fax["faxId"]
-        
-        subscriber = fax["subscriberId"]
-        state = fax["state"]
-        # right now we only scan new i/b faxes but 
-        # later it may be changed by user (system) requirement
-        if state == "mark_new": 
-            path = f"{subscriber}/in/{faxid}.tif"
-            codes = []
-            log.info(f"target path:{path}")
-            try:
-                codes = self.barcoder.read_barcode(path)
-            except Exception as e:
-                log.exception(f"failed to read_barcode:{e}")    
-            
-            log.info(f"faxid:{faxid}, codes:{codes}")    
-            fax["barCodes"] = codes
-      
-            self.dao.save(faxid, codes)
-            
-        else:
-            log.info(f"skip barcode scanning because it is not 'mark_new'. faxid:{faxid}")
-                        
-        self.producer.send(faxid, fax)
+
+    def __init__(self, barcoder: BarcodeReader, dao: AbstractDao, producer_handler: Callable[[str, dict], None]) -> None:
+        if any((a is None for a in (barcoder, dao, producer_handler))):
+            raise ValueError()
+        self.__barcoder = barcoder
+        self.__dao = dao
+        self.__producer_handler = producer_handler
+
+    def handle(self, fax: dict) -> None:
+        try:
+            # Initialization to cover the event of an exception being raised
+            fax["barCodes"] = []
+
+            fax_id = fax["faxId"]
+            fileName = fax["fileName"]
+            subscriber = fax["subscriberId"]
+            state = fax["state"]
+
+            # Only scan fax events marked as New
+            if state == "mark_new":
+                path = f"{subscriber}/in/{fileName}"
+                _log.info(f"Analyzing file: {path}")
+                codes = self.__barcoder.read_barcode(Path(path))
+                _log.info(f"Fax ID [{fax_id}]; Codes [{codes}]")
+                fax["barCodes"] = list(
+                    ( {"pageNo": bar_code.page_no, "format": bar_code.format, "rawResult": bar_code.raw_result} for bar_code in codes )
+                )
+                if len(codes):
+                    self.__dao.save(fax_id, codes)
+            else:
+                _log.warning(f"Skip barcode scanning because fax state is not 'mark_new'. Fax ID [{fax_id}] has state [{state}]")
+        except (FailedToProcessImageException, KeyError, ValueError, DatabaseError, PoolError, FaxDaoException, RuntimeError) as ex:
+            _log.error(str(ex))
+        finally:
+            self.__producer_handler(fax_id, fax)

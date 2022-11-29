@@ -8,7 +8,7 @@
 
 # But don't ignore these directories
 !/src/
-!/resources/
+!/config_samples/
 
 # and don't ignore these specific files
 !/.gitignore

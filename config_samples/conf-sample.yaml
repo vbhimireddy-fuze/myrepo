@@ -1,0 +1,25 @@
+thread_cnt: <workers number> # Number of workers to be created to process events. (ex: 1)
+
+db:
+   host: <host ip or hostname> # Fax Server Database host ip (ex: 192.168.2.2) or hostname (ex: localhost)
+   port: <port number> # Fax Server Database host port (ex: 3306)
+   database: <database name> # Fax Server Database name (where tables with fax information are) (ex: faxserver)
+   user: <database username credential> # Fax Server Database username (ex: ipbx)
+   password: <database password credential> # Fax Server Database password for the provided username (ex: passwd)
+   pool_size: <connections pool size> # Database Connection Pool size (per thread) (ex: 1)
+
+faxes_dir: <systemfile location> # Fax files root directory, usually an NFS mount (ex: /nfs/fax_files_root/)
+
+consumer: # See kafka documentation for more technical details
+   bootstrap.servers: <hostname, ip or url> # Kafka bootstrap url (ex: localhost)
+   group.id: <kafka group>  # kafka group ID (ex: barcode)
+   topics: # a list of topics from where barcode service will be consuming events.
+   - <kafka topic name> # (ex: fax-topic)
+   auto.offset.reset: earliest
+   enable.auto.commit: true
+   timeout: <timeout value in seconds> # Kafka consumer pooling timeout, in seconds (ex: 1.0)
+   is_confluent: <true or false> # Boolean value indicating if Kafka is confluent kafka
+
+producer: # See kafka documentation for more technical details
+   bootstrap.servers: <hostname, ip or url> # Kafka bootstrap url (ex: localhost)
+   topic: <kafka topic name> # The topic where barcode service will be producing events. (ex: topicx)

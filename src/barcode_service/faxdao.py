@@ -1,76 +1,103 @@
+# coding=utf-8
 import logging
-import os
-import mysql.connector.pooling as pooling    
+from abc import ABC, abstractmethod
+from typing import Iterable
 
-# those should not be used in barcode
-deli = '¹'
-deli2 = '²'
+from mysql.connector import pooling, DatabaseError
 
-_save_query = "update t_fax set barcodes = %s where faxId = %s"
+from barcode_service.barcodereader import Barcode
+
+_log = logging.getLogger(__name__)
+
+# These characters should not be encoded in bar codes
+_FIELDS_DELIMITER = '¹'
+_BARCODE_DATA_DELIMITER = '²'
+
+_UPDATE_QUERY = """
+UPDATE t_fax
+SET barcodes = %s
+WHERE faxId = %s
+"""
+
+_BARCODES_FIELD_TYPE_QUERY = """SELECT data_type
+FROM information_schema.columns
+WHERE  table_name = 't_fax' AND column_name = 'barCodes'
+LIMIT 1
+"""
+
+_MAXIMUM_TEXT_TYPES_LENGHT = {
+    "tinytext": 256,
+    "text": 65535,
+    "mediumtext": 16777215,
+    "longtext": 4294967295
+}
 
 
-class FaxDao:
-    
-    def __init__(self, conf):
-        global log
-        log = logging.getLogger(__name__)
-        self.conf = conf
-        log.info(f"new FaxDao, host:{conf['host']}, db:{conf['database']}")
-        self.max_column_size = conf.pop("max_column_size")
-        pool_size = conf["pool_size"]
-        log.info(f"pool_size:{pool_size}")
-        self.pool = pooling.MySQLConnectionPool(pool_name="faxdb",
-                                                      **conf)
-        
-    def save(self, faxid, barcodes):
-        log.info(f"save faxid:{faxid}")
-        codetxt = deli2
+class AbstractDao(ABC):
+    @abstractmethod
+    def save(self, fax_id: str, barcodes: Iterable[Barcode]) -> None:
+        pass
+
+
+class FaxDaoException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class FailedInitializationException(FaxDaoException):
+    pass
+
+
+class FaxDao(AbstractDao):
+    def __init__(self, conf: dict) -> None:
         try:
-            codetxt = self.codes2txt(barcodes)
-        except Exception as e:
-                log.error(f"failed codes2txt:{e}")    
-        
-        size = len(codetxt)
-        if size > self.max_column_size:
-            log.warning(f"data exceed. size:{size}")
-            codetxt = codetxt[:size]
-            
-        log.info(f"codetxt:{codetxt}")
+            self.__pool = pooling.MySQLConnectionPool(pool_name="faxdb", **conf)
+            with self.__pool.get_connection() as con:
+                with con.cursor(named_tuple=True) as cur:
+                    cur.execute(_BARCODES_FIELD_TYPE_QUERY)
+                    if not cur.with_rows:
+                        raise FailedInitializationException("Could not obtain barCodes field type from database")
+                    field_type: str = next(cur).data_type
+                    con.commit()
+                    field_type = field_type.lower()
+                    self.__max_column_size = _MAXIMUM_TEXT_TYPES_LENGHT.get(field_type, None)
+                    if self.__max_column_size is None:
+                        raise FailedInitializationException(f"Database barCodes field type is [{field_type}]. Accepted types are [{tuple(_MAXIMUM_TEXT_TYPES_LENGHT.keys())}]")
 
-        con = None
-        cur = None 
-        try:
-            con = self.pool.get_connection()
-            cur = con.cursor(prepared=True)
-            params = (codetxt, faxid)
-            cur.execute(_save_query, params)
-            con.commit()
-        except Exception as e: 
-            log.error(f"failed query, e:{e}")
-            
-        finally:
-            self._close(cur) 
-            self._close(con)            
-            
-    def _close(self, obj):
-        try:
-            obj.close()
-        except:
-            log.info(f"closing failed:{obj}")
-            None        
-    
-    def codes2txt(self, codes):
-        if not codes:
-            return deli2
-        
-        txt = ""
-        for code in codes:
-            txt = txt + self.code2txt(code) + deli2
-        return txt
-        
-    def code2txt(self, code):
-        no = str(code.get("pageNo"))          
-        fm = str(code.get("format"))
-        result = str(code.get("rawResult"))
-        txt = no + deli + fm + deli + result
-        return txt
+                    _log.info(f"Maximum barcode serialized data length is {self.__max_column_size}")
+        except DatabaseError as ex:
+            raise FailedInitializationException(str(ex)) from ex
+
+    def save(self, fax_id: str, barcodes: Iterable[Barcode]) -> None:
+        _log.debug(f"Updating fax [{fax_id}] with barcode data")
+
+        barcodes_text, leftovers = self._serialize_barcodes(barcodes)
+        if leftovers:
+            _log.warning(f"Could not save the following barcodes for fax with ID [{fax_id}]: [{leftovers}]")
+
+        _log.debug(f"barcodes_text: {barcodes_text}")
+
+        with self.__pool.get_connection() as con:
+            with con.cursor(prepared=True) as cur:
+                cur.execute(_UPDATE_QUERY, (barcodes_text, fax_id))
+                con.commit()
+
+    def _serialize_barcodes(self, barcodes: Iterable[Barcode]) -> str:
+        available_space = self.__max_column_size
+        barcodes_prep = []
+        leftovers = []
+        for index, code in enumerate(barcodes):
+            serialized_code = "{page_no:d}{delimiter:1s}{format:s}{delimiter:1s}{raw_result:s}".format(
+                delimiter=_FIELDS_DELIMITER,
+                page_no=code.page_no,
+                format=code.format,
+                raw_result=code.raw_result
+            )
+            serialized_code_len = len(serialized_code)
+            if available_space < serialized_code_len:
+                leftovers.extend(barcodes[index:])
+                break
+            available_space -= (serialized_code_len + (len(_BARCODE_DATA_DELIMITER) if index > 0 else 0))
+            barcodes_prep.append(serialized_code)
+
+        return (_BARCODE_DATA_DELIMITER.join(barcodes_prep), leftovers)
