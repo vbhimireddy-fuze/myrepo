@@ -27,13 +27,13 @@ class EventHandler:
             fax["barCodes"] = []
 
             fax_id = fax["faxId"]
-            fileName = fax["fileName"]
+            fileName = Path(fax["fileName"])
             subscriber = fax["subscriberId"]
             state = fax["state"]
 
             # Only scan fax events marked as New
             if state == "mark_new":
-                path = f"{subscriber}/in/{fileName}"
+                path = f"{subscriber}/in/{fileName.stem}.tif"
                 _log.info(f"Analyzing file: {path}")
                 codes = self.__barcoder.read_barcode(Path(path))
                 _log.info(f"Fax ID [{fax_id}]; Codes [{codes}]")
