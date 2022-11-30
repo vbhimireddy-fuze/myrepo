@@ -19,7 +19,7 @@ SET barcodes = %s
 WHERE faxId = %s
 """
 
-_BARCODES_FIELD_TYPE_QUERY = """SELECT data_type
+_BARCODES_FIELD_TYPE_QUERY = """SELECT data_type as data_type
 FROM information_schema.columns
 WHERE  table_name = 't_fax' AND column_name = 'barCodes'
 LIMIT 1
