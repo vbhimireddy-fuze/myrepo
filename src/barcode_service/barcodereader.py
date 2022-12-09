@@ -1,27 +1,13 @@
 # coding=utf-8
 import logging
-from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Generator, Tuple
 
+from barcode_service.service_data import Barcode
+
 _log = logging.getLogger(__name__)
-
-
-class BarcodeReaderException(ABC, Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
-class FailedToProcessImageException(BarcodeReaderException):
-    def __init__(self) -> None:
-        super().__init__("Failed to process image")
-
-@dataclass
-class Barcode():
-    page_no: int
-    format: str
-    raw_result: str
 
 
 class BarcodeReader:
@@ -29,7 +15,7 @@ class BarcodeReader:
     class BarcodeConfiguration:
         faxes_location: Path = None
 
-    def __init__(self, config: BarcodeConfiguration, barcode_extractor: Generator[Tuple[int, str, str], Path, None]) -> None:
+    def __init__(self, config: BarcodeConfiguration, barcode_extractor: Generator[Tuple[int, str, str], None, None]) -> None:
         self.__barcode_extractor = barcode_extractor
         self.faxes_location: Path = config.faxes_location
         _log.info(f"new BarcodeReader. NFS faxes_dir:{self.faxes_location}")

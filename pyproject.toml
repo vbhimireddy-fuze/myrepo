@@ -54,6 +54,8 @@ python_files = ["test_*.py"]
 source = ["src/barcode_service"]
 omit = ["src/barcode_service/__main__.py"]
 
+
+# More Options -> https://pylint.pycqa.org/en/latest/user_guide/configuration/all-options.html
 [tool.pylint]
 max-line-length = 360
 output-format = "colorized"
@@ -75,3 +77,4 @@ disable = [
 enable = [
     "W1201", # (logging-not-lazy)
 ]
+generated-members = "cv2.*"

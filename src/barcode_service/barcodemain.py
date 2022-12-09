@@ -82,7 +82,11 @@ def _thread_main(conf, shutdown_signal: ShutDownSignal) -> None:
 
         faxdao = FaxDao(conf["db"])
         producer = EventProducer(conf["producer"], producer_schema_txt)
-        handler = EventHandler(barcode_reader, faxdao, (lambda fax_id, fax, p=producer: p.send(fax_id, fax)))
+        handler = EventHandler(
+            (lambda file_path, br=barcode_reader: br.read_barcode(file_path)),
+            (lambda fax_id, barcodes, fd=faxdao: fd.save(fax_id, barcodes)),
+            (lambda fax_id, fax, p=producer: p.send(fax_id, fax))
+        )
         consumer = EventConsumer(conf["consumer"], consumer_schema_txt, (lambda fax, h=handler: h.handle(fax)))
 
         # The worker thread registers the consumer termination method, for orderly shutdown

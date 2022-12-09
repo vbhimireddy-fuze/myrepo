@@ -3,9 +3,10 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from mysql.connector import pooling, DatabaseError
+from mysql.connector import DatabaseError, pooling
 
 from barcode_service.barcodereader import Barcode
+from barcode_service.dao_exceptions import FailedInitializationException
 
 _log = logging.getLogger(__name__)
 
@@ -37,15 +38,6 @@ class AbstractDao(ABC):
     @abstractmethod
     def save(self, fax_id: str, barcodes: Iterable[Barcode]) -> None:
         pass
-
-
-class FaxDaoException(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
-
-class FailedInitializationException(FaxDaoException):
-    pass
 
 
 class FaxDao(AbstractDao):

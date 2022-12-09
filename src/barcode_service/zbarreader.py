@@ -1,11 +1,13 @@
 # coding=utf-8
 import logging
 from pathlib import Path
-from typing import Tuple, Iterator
+from typing import Generator, Tuple
 
 import cv2
+from pyzbar.pyzbar import PyZbarError
+from pyzbar.pyzbar import decode as pyzbar_decode
 
-from pyzbar.pyzbar import decode as pyzbar_decode, PyZbarError
+from barcode_service.processing_exceptions import ScanningFailureException
 
 __all__ = [
     "zbar_barcode_extractor"
@@ -14,10 +16,10 @@ __all__ = [
 _log = logging.getLogger(__name__)
 
 
-def zbar_barcode_extractor(image_location: Path) -> Iterator[Tuple[int, str, str]]:
+def zbar_barcode_extractor(image_location: Path) -> Generator[Tuple[int, str, str], None, None]:
     ret, imgs = cv2.imreadmulti(str(image_location.absolute()), [], cv2.IMREAD_REDUCED_COLOR_2)
     if ret is False:
-        raise RuntimeError(f"Cannot process image at location [{image_location.absolute()}]")
+        raise ScanningFailureException(f"Cannot process image at location [{image_location.absolute()}]")
 
     for image_page, image in enumerate(imgs, start = 1):
         try:
