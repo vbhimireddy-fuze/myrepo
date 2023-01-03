@@ -12,6 +12,7 @@ from threading import ExceptHookArgs, Thread
 from types import TracebackType
 from typing import List, Type, Union
 
+from barcode_service import __version__ as SERVICE_VERSION
 from barcode_service.barcodereader import BarcodeReader
 from barcode_service.cli_parser import parse_arguments
 from barcode_service.confutil import ConfUtil
@@ -127,6 +128,7 @@ def main():
 
     _log.info(f'Service Configuration Options: "{conf.conf}"')
     _log.info(f'Logging Configuration Options: "{conf.log_conf}"')
+    _log.info(f'Barcode Decoder Service: Version [{SERVICE_VERSION}]')
 
 
     thread_cnt = conf.conf["thread_cnt"]
