@@ -10,6 +10,10 @@ db:
 
 faxes_dir: <systemfile location> # Fax files root directory, usually an NFS mount (ex: /nfs/fax_files_root/)
 
+scanner_options:
+   wait_period: <float value> # Waiting time in seconds
+   max_retries: <int value> # Number of retries until failure
+
 consumer: # See kafka documentation for more technical details
    bootstrap.servers: <hostname, ip or url> # Kafka bootstrap url (ex: localhost)
    group.id: <kafka group>  # kafka group ID (ex: barcode)

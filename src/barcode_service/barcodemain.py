@@ -22,6 +22,7 @@ from barcode_service.eventproducer import EventProducer
 from barcode_service.faxdao import \
     FailedInitializationException as FaxDaoFailedInitializationException
 from barcode_service.faxdao import FaxDao
+from barcode_service.generic_scanner import create_barcode_scanner, BarcodeScannerOptions
 from barcode_service.helpers import custom_logging_callback
 from barcode_service.synchronization import ShutDownSignal
 from barcode_service.zbarreader import zbar_barcode_extractor
@@ -30,6 +31,8 @@ RESOURCES_MODULE = "barcode_service.resources"
 PRODUCER_SCHEMA = "producer.avsc"
 CONSUMER_SCHEMA = "reader.avsc"
 
+DEFAULT_SCANNER_MAX_WAIT_PERIOD = 1.0 # Default Scanner Waiting Time
+DEFAULT_SCANNER_MAX_RETRIES = 5 # Default Scanner Maximum Number of Retries
 
 _log = logging.getLogger(__name__)
 
@@ -74,11 +77,19 @@ def _thread_main(conf, shutdown_signal: ShutDownSignal) -> None:
         if not os.access(str(faxes_location), os.R_OK):
             raise PermissionError(f"No read rights to location [{faxes_location}]")
 
+        scanner_options = conf.get("scanner_options", {"wait_period": DEFAULT_SCANNER_MAX_WAIT_PERIOD, "max_retries": DEFAULT_SCANNER_MAX_RETRIES})
+
         barcode_reader = BarcodeReader(
             BarcodeReader.BarcodeConfiguration(
                 faxes_location=faxes_location
             ),
-            zbar_barcode_extractor
+            create_barcode_scanner(
+                zbar_barcode_extractor,
+                BarcodeScannerOptions(
+                    scanner_options.get("wait_period", DEFAULT_SCANNER_MAX_WAIT_PERIOD),
+                    scanner_options.get("max_retries", DEFAULT_SCANNER_MAX_RETRIES),
+                ),
+            ),
         )
 
         faxdao = FaxDao(conf["db"])
