@@ -1,4 +1,5 @@
 thread_cnt: <workers number> # Number of workers to be created to process events. (ex: 1)
+enable_scan_barcode: true # if false it will NOT scan barcode
 
 db:
    host: <host ip or hostname> # Fax Server Database host ip (ex: 192.168.2.2) or hostname (ex: localhost)
