@@ -1,6 +1,9 @@
 # coding=utf-8
 
-__all__ = ["main", "__version__"]
+from .barcodemain import main
+
+__all__ = ["main", "version"]
 __version__ = "99.99.99999+fffffff"
 
-from .barcodemain import main
+def version() -> str:
+    return __version__

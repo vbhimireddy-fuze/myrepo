@@ -12,7 +12,8 @@ from threading import ExceptHookArgs, Thread
 from types import TracebackType
 from typing import List, Type, Union
 
-from barcode_service import __version__ as SERVICE_VERSION
+from barcode_service import \
+    __version__ as SERVICE_VERSION  # pylint: disable=cyclic-import
 from barcode_service.barcodereader import BarcodeReader
 from barcode_service.cli_parser import parse_arguments
 from barcode_service.confutil import ConfUtil
@@ -22,7 +23,8 @@ from barcode_service.eventproducer import EventProducer
 from barcode_service.faxdao import \
     FailedInitializationException as FaxDaoFailedInitializationException
 from barcode_service.faxdao import FaxDao
-from barcode_service.generic_scanner import create_barcode_scanner, BarcodeScannerOptions
+from barcode_service.generic_scanner import (BarcodeScannerOptions,
+                                             create_barcode_scanner)
 from barcode_service.helpers import custom_logging_callback
 from barcode_service.synchronization import ShutDownSignal
 from barcode_service.zbarreader import zbar_barcode_extractor
@@ -99,21 +101,21 @@ def _thread_main(conf, shutdown_signal: ShutDownSignal) -> None:
             (lambda fax_id, barcodes, fd=faxdao: fd.save(fax_id, barcodes)),
             (lambda fax_id, fax, p=producer: p.send(fax_id, fax))
         )
-        
-        enable_scan_barcode = conf["enable_scan_barcode"] 
+
+        enable_scan_barcode = conf["enable_scan_barcode"]
         _log.info(f"enable_scan_barcode: {enable_scan_barcode}")
         if enable_scan_barcode:
             consumer = EventConsumer(
-                conf["consumer"], 
-                consumer_schema_txt, 
+                conf["consumer"],
+                consumer_schema_txt,
                 (lambda fax, h=handler: h.handle(fax))
             )
         else:
             consumer = EventConsumer(
-                conf["consumer"], 
-                consumer_schema_txt, 
+                conf["consumer"],
+                consumer_schema_txt,
                 (lambda fax, p=producer: p.send(fax["faxId"], fax))
-            )    
+            )
 
         # The worker thread registers the consumer termination method, for orderly shutdown
         shutdown_signal.register_callback((lambda c=consumer: c.terminate()))
