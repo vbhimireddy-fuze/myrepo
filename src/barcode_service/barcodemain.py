@@ -12,8 +12,7 @@ from threading import ExceptHookArgs, Thread
 from types import TracebackType
 from typing import List, Type, Union
 
-from barcode_service import \
-    __version__ as SERVICE_VERSION  # pylint: disable=cyclic-import
+from barcode_service.version import SERVICE_VERSION
 from barcode_service.barcodereader import BarcodeReader
 from barcode_service.cli_parser import parse_arguments
 from barcode_service.confutil import ConfUtil

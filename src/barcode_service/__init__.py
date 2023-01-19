@@ -2,8 +2,4 @@
 
 from .barcodemain import main
 
-__all__ = ["main", "version"]
-__version__ = "99.99.99999+fffffff"
-
-def version() -> str:
-    return __version__
+__all__ = ["main"]

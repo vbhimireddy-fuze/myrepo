@@ -1,6 +1,7 @@
 # coding=utf-8
 from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
+from barcode_service.version import SERVICE_VERSION
 
 __all__ = ["parse_arguments"]
 
@@ -16,7 +17,7 @@ def parse_arguments() -> ArgumentParser:
             raise ArgumentTypeError(f"Location [{loc}] does not reference a file.")
         return loc
 
-    parser = ArgumentParser(prog="barcode_service")
+    parser = ArgumentParser(prog="barcode_service", description=f"Barcode Service v{SERVICE_VERSION}")
     parser.add_argument(
         "-sl",
         "--service_config_location",

@@ -35,7 +35,7 @@ packages = ['barcode_service', 'barcode_service.resources']
 [tool.setuptools.dynamic]
 dependencies = { file = "requirements.txt" }
 readme = { file = "README.md" }
-version = { attr = "barcode_service.__version__" }
+version = { attr = "barcode_service.version.SERVICE_VERSION" }
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = { file = "development_requirements.txt" }

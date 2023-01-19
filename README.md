@@ -28,7 +28,7 @@ The `barcode_service` artefact will be built and droped into the `./build_dir` w
 
 ### Defining the artefact version
 By default, the artefact is built using version `99.99.99999+fffffff`
-To set a different version (which is good when building an artefact for releases), update the `__version__` attribute in the [src/barcode_service/__init__.py](src/barcode_service/__init__.py) source file accordingly.
+To set a different version (which is good when building an artefact for releases), update the `SERVICE_VERSION` attribute in the [src/barcode_service/version.py](src/barcode_service/version.py) source file accordingly.
 The version format must follow the [PEP 440](https://peps.python.org/pep-0440/) specification.
 
 ## Installation procedure
