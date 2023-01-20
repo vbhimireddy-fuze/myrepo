@@ -21,7 +21,6 @@ consumer: # See kafka documentation for more technical details
    topics: # a list of topics from where barcode service will be consuming events.
    - <kafka topic name> # (ex: fax-topic)
    auto.offset.reset: earliest
-   enable.auto.commit: true
    timeout: <timeout value in seconds> # Kafka consumer pooling timeout, in seconds (ex: 1.0)
    is_confluent: <true or false> # Boolean value indicating if Kafka is confluent kafka
 

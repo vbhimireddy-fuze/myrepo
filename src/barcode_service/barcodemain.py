@@ -95,10 +95,11 @@ def _thread_main(conf, shutdown_signal: ShutDownSignal) -> None:
 
         faxdao = FaxDao(conf["db"])
         producer = EventProducer(conf["producer"], producer_schema_txt)
+
         handler = EventHandler(
             (lambda file_path, br=barcode_reader: br.read_barcode(file_path)),
             (lambda fax_id, barcodes, fd=faxdao: fd.save(fax_id, barcodes)),
-            (lambda fax_id, fax, p=producer: p.send(fax_id, fax))
+            (lambda kafka_event, p=producer: p.send(kafka_event))
         )
 
         enable_scan_barcode = conf["enable_scan_barcode"]
@@ -107,13 +108,13 @@ def _thread_main(conf, shutdown_signal: ShutDownSignal) -> None:
             consumer = EventConsumer(
                 conf["consumer"],
                 consumer_schema_txt,
-                (lambda fax, h=handler: h.handle(fax))
+                (lambda kafka_event, h=handler: h.handle(kafka_event))
             )
         else:
             consumer = EventConsumer(
                 conf["consumer"],
                 consumer_schema_txt,
-                (lambda fax, p=producer: p.send(fax["faxId"], fax))
+                (lambda kafka_event, p=producer: p.send(kafka_event))
             )
 
         # The worker thread registers the consumer termination method, for orderly shutdown

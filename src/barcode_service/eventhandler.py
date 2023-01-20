@@ -7,6 +7,7 @@ from mysql.connector import DatabaseError, PoolError
 
 from barcode_service.barcodereader import Barcode
 from barcode_service.dao_exceptions import DaoException
+from barcode_service.event_data import KafkaMessage
 from barcode_service.event_exceptions import InvalidMessageAttributeException
 from barcode_service.processing_exceptions import ScanningFailureException
 
@@ -15,13 +16,14 @@ _log = logging.getLogger(__name__)
 
 class EventHandler:
 
-    def __init__(self, read_barcodes: Callable[[Path], Tuple[Barcode]], store_barcodes: Callable[[str, Tuple[Barcode]], None], producer_handler: Callable[[str, dict], None]) -> None:
+    def __init__(self, read_barcodes: Callable[[Path], Tuple[Barcode]], store_barcodes: Callable[[str, Tuple[Barcode]], None], producer_handler: Callable[[KafkaMessage], None]) -> None:
         self.__read_barcodes = read_barcodes
         self.__store_barcodes = store_barcodes
         self.__producer_handler = producer_handler
 
-    def handle(self, fax: dict) -> None:
+    def handle(self, event: KafkaMessage) -> None:
         try:
+            fax = event.fax
             # Initialization to cover the event of an exception being raised
             fax["barCodes"] = []
             state = fax.get("state", None)
@@ -47,8 +49,17 @@ class EventHandler:
 
         except (DatabaseError, PoolError, DaoException, InvalidMessageAttributeException, ScanningFailureException) as ex:
             _log.error(str(ex))
-        finally:
-            self.__producer_handler(fax_id, fax)
+
+        # The call to the producer handler was left purposely on the outside of the try/catch/finally block.
+        # This was done because the code needs to call the handler on two specific occasions
+        #  - 1st) When the fax event is processed properly
+        #  - 2nd) When a handled exception is raised during the processing of the fax event.
+        # If neither of these two situations occur, is because an unhandled exception was raised.
+        # Such situation is critical because the state of the event is unknown and the service cannot forward the event.
+        # Forwarding the event in such situation could mean forwarding with an undefined state. The correct approach here would
+        # be to terminate and execution, not forwarding the event, leaving it to be processed by either a new instance or a different
+        # instance of the service.
+        self.__producer_handler(event)
 
     def __process_fax(self, fax: dict, file: Path) -> None:
         fax_id = fax["faxId"]

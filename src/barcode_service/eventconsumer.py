@@ -6,13 +6,14 @@ from typing import Callable
 from confluent_kafka import Consumer
 
 from barcode_service.avroparser import AvroDec
+from barcode_service.event_data import KafkaMessage
 
 _log = logging.getLogger(__name__)
 
 
 class EventConsumer:
 
-    def __init__(self, conf: dict, schema: str, fax_handler_cb: Callable[[dict], None]) -> None:
+    def __init__(self, conf: dict, schema: str, fax_handler_cb: Callable[[KafkaMessage], None]) -> None:
         _log.info(f"new EventConsumer. conf:{conf}")
         self.__config_lock = Lock()
         self.__terminated = False
@@ -24,12 +25,26 @@ class EventConsumer:
         self.__dec = AvroDec(schema)
 
         conf2 = dict(filter(lambda e: e[0] in
-            ('bootstrap.servers', 'group.id', 'auto.offset.reset', 'enable.auto.commit'),
+            ('bootstrap.servers', 'group.id', 'auto.offset.reset'),
             conf.items()))
+        conf2['enable.auto.commit'] = False # Required for consumption transactions
+        conf2['isolation.level'] = "read_committed"
 
         self.__consumer = Consumer(**conf2)
         topics = conf['topics']
-        self.__consumer.subscribe(topics)
+        self.__consumer.subscribe(
+            topics,
+            on_assign=(
+                lambda _, partitions: _log.info(
+                    f"Assigned partitions: [{tuple(p.partition for p in partitions)}]"
+                )
+            ),
+            on_revoke=(
+                lambda _, partitions: _log.info(
+                    f"Revoked partitions: [{tuple(p.partition for p in partitions)}]"
+                )
+            ),
+        )
         _log.info(f"Subscribed to topics [{topics}]")
 
     def run(self) -> None:
@@ -64,7 +79,13 @@ class EventConsumer:
                     continue
 
                 _log.info(f'Received [topic:{msg.topic()}, partition:{msg.partition()}, offset:{msg.offset() }, key:{key}], event:{fax}')
-                self.__fax_handler_cb(fax)
+                event = KafkaMessage(
+                    fax=fax,
+                    consumer_position=self.__consumer.position(self.__consumer.assignment()),
+                    consumer_group_metadata=self.__consumer.consumer_group_metadata(),
+                )
+                self.__fax_handler_cb(event)
+
         except RuntimeError as ex:
             _log.warning(f"Consumer was terminated due to reason: [{ex}]")
 
