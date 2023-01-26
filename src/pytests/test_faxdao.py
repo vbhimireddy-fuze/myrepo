@@ -1,0 +1,41 @@
+from unittest.mock import patch, MagicMock
+from barcode_service.faxdao import FaxDao
+from barcode_service.service_data import Barcode
+
+def test_save():
+    with patch("barcode_service.faxdao.pooling.MySQLConnectionPool") as pool:
+        m_pool = MagicMock()
+        pool.return_value = m_pool
+        con = MagicMock()
+        m_pool.get_connection.return_value.__enter__.return_value = con
+        cur = MagicMock()
+        con.cursor.return_value.__enter__.return_value = cur
+        cur.__next__.return_value.data_type = "tinytext"
+
+        conf = {"host": "localhost", "database":"db", "pool_size": 10}
+        dao = FaxDao(conf)
+
+        dao.save("f1", [])
+
+        assert con.cursor.called
+        assert con.commit.called
+
+
+def test__serialize_barcodes():
+    with patch("barcode_service.faxdao.pooling.MySQLConnectionPool") as pool:
+        m_pool = MagicMock()
+        pool.return_value = m_pool
+        con = MagicMock()
+        m_pool.get_connection.return_value.__enter__.return_value = con
+        cur = MagicMock()
+        con.cursor.return_value.__enter__.return_value = cur
+        cur.__next__.return_value.data_type = "tinytext"
+
+        conf = {"host": "localhost", "database":"db", "pool_size": 10}
+        dao = FaxDao(conf)
+
+        codes = [Barcode(1, "code128", "this is barcode")]
+        result = dao._serialize_barcodes(codes)
+
+        expected = ('1¹code128¹this is barcode', [])
+        assert expected == result
