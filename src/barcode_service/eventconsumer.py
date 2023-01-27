@@ -24,13 +24,15 @@ class EventConsumer:
 
         self.__dec = AvroDec(schema)
 
-        conf2 = dict(filter(lambda e: e[0] in
-            ('bootstrap.servers', 'group.id', 'auto.offset.reset'),
-            conf.items()))
-        conf2['enable.auto.commit'] = False # Required for consumption transactions
-        conf2['isolation.level'] = "read_committed"
-
-        self.__consumer = Consumer(**conf2)
+        self.__consumer = Consumer(
+            **{
+                'bootstrap.servers': conf['bootstrap']['servers'],
+                'group.id': conf['group']['id'],
+                'auto.offset.reset': conf['auto']['offset']['reset'],
+                'enable.auto.commit': False,
+                'isolation.level': 'read_committed',
+            }
+        )
         topics = conf['topics']
         self.__consumer.subscribe(
             topics,

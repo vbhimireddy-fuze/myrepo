@@ -23,8 +23,16 @@ Requires the `build` python package to be installed via `pip`
 Ex: `$ pip install build`
 
 ### Building a wheel artefact
-Inside the directory to where the repository was cloned, simply execute: `$ pip wheel -w ./build_dir .`
-The `barcode_service` artefact will be built and droped into the `./build_dir` which will have been created by `pip` if it was not previously created.
+There are two ways to build the wheel artefact for barcode service.
+1. Using the `build` module.
+2. Using `pip`
+
+The 1st approach requires the installation of the `build` module via pip: `$ pip install build`.
+Then, inside the directory to where the repository was cloned, simply execute: `$ python -m build`
+
+The 2nd approach only requires pip to be called. Simply execute : `$ pip wheel -w ./dist --no-deps .`
+
+For both cases, the `barcode_service` artefact will be built and dropped into the `./dist` directory.
 
 ### Defining the artefact version
 By default, the artefact is built using version `99.99.99999+fffffff`
@@ -45,26 +53,37 @@ The service has a helper which provides the CLI options which can be accessed us
 Example:
 ```
 $ barcode_service --help
-usage: barcode_service [-h] [-sl SERVICE_CONFIG_LOCATION] [-ll LOG_CONFIG_LOCATION]
+usage: barcode_service [-h] {config_files,spring_config} ...
 
-optional arguments:
+positional arguments:
+  {config_files,spring_config}
+                        sub-command help
+    config_files        Runs Barcode Service using config files
+    spring_config       Runs Barcode Service using configurations from Spring Config service
+
+options:
   -h, --help            show this help message and exit
-  -sl SERVICE_CONFIG_LOCATION, --service_config_location SERVICE_CONFIG_LOCATION
-                        Service configuration (YAML) file path.
-  -ll LOG_CONFIG_LOCATION, --log_config_location LOG_CONFIG_LOCATION
-                        Log configuration (YAML) file path.
 ```
 
-### Service Configuration Files
+### Service Running using Config Service
+The barcode service supports obtaining the configurations using a specified Config Service
+By default, the barcode service looks into the environment variables and search for two variables:
+* **CONFIG_HOST**: Sets the Config Service host. DEfault value is `localhost:8087` which makes this service connect to the Config Service running in the Cloud8 Local kubernetes setup.
+* **SPRING_CLOUD_CONFIG_LABEL**: Sets the label from where the config service should be fetched. In Cloud8, this should be set to the branch from the repo [cloud8-config-service-backend](https://github.com/8x8/cloud8-config-service-backend) where the barcode configs will be. Default value is `master`.
+
+To run the barcode service using Config Service, the service should be started with the `spring_config` sub-command. Example: `barcode_service spring_config`.
+
+### Service Running using local Configuration Files
 The service uses two different configuration files:
 * **Execution Configuration**: This is set using the `-sl` flag. An example of this configuration can be seen in [resources/conf-sample.yaml](resources/conf-sample.yaml)
 * **Logger Configuration**: This is set using the `-ll` flag. An example of this configuration can be seen in [resources/log-sample.yaml](resources/log-sample.yaml)
 
+To run the barcode service using local configuration files, the service should be started with the `config_files` sub-command. Example: `barcode_service config_files -sl <service config file> -ll <service log config file>`.
 
 ### Running the service using python module startup procedure
 The service is implemented so that it can be launched using the python cli module startup, which is somewhat common in the python ecosystem.
 For example, python provides a quick HTTP server which can be started by just calling `$ python3 -m http.server`.
-In the same way, the service can be started by calling `$ python3 -m barcode_service -sl <service config file> -ll <service log config file>`
+In the same way, the service can be started by calling `$ python3 -m barcode_service config_files -sl <service config file> -ll <service log config file>` for local config files configuration, or just `$ python3 -m barcode_service spring_config` for Spring Config configuration.
 
 
 ## Development
@@ -152,6 +171,7 @@ By taking leverage on the fact that this service can be started by using the pyt
 This requires the project to be installed in either production mode or development mode (check the [Development Install section](#Development-Install-section) above)
 
 As so, just add the following information to a `launch.json` file and place it inside the `.vscode` directory present in the project root directory. If the `.vscode` directory does not exist, then it is necessary to to manually create it. VSCode will do all of this automatically when configuring the `Run & Debug` feature if requested in its Tab.
+⚠️ **Note:** This `launch.json` assumes the existence of a `work_dir` directory located at the root of the repository which should contain the configuration files for the static config launch mode. **This `work_dir` directory should not be submitted to Pull Requests and should be considered just a local test folder. Git Ignore already prevents such addition to commits.**
 ```
 {
     // Use IntelliSense to learn about possible attributes.
@@ -160,12 +180,23 @@ As so, just add the following information to a `launch.json` file and place it i
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "Barcode Service (with Spring Config service)",
             "type": "python",
             "request": "launch",
             "module": "barcode_service",
-            "args": ["-sl", "conf-sample.yaml", "-ll", "log-default.yaml"],
-            "cwd": "${workspaceFolder}/config_samples",
+            "args": ["spring_config"],
+            "pythonArgs": ["-X", "dev"],
+            "cwd": "${workspaceFolder}/work_dir",
+            "justMyCode": true
+        },
+        {
+            "name": "Barcode Service (with static config files)",
+            "type": "python",
+            "request": "launch",
+            "module": "barcode_service",
+            "args": ["config_files", "-sl", "conf-sample.yaml", "-ll", "log-default.yaml"],
+            "pythonArgs": ["-X", "dev"],
+            "cwd": "${workspaceFolder}/work_dir",
             "justMyCode": true
         }
     ]

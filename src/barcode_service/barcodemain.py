@@ -12,10 +12,11 @@ from threading import ExceptHookArgs, Thread
 from types import TracebackType
 from typing import List, Type, Union
 
-from barcode_service.version import SERVICE_VERSION
 from barcode_service.barcodereader import BarcodeReader
 from barcode_service.cli_parser import parse_arguments
 from barcode_service.confutil import ConfUtil
+from barcode_service.environment_variables import \
+    get_environment_variable_configurations
 from barcode_service.eventconsumer import EventConsumer
 from barcode_service.eventhandler import EventHandler
 from barcode_service.eventproducer import EventProducer
@@ -25,7 +26,11 @@ from barcode_service.faxdao import FaxDao
 from barcode_service.generic_scanner import (BarcodeScannerOptions,
                                              create_barcode_scanner)
 from barcode_service.helpers import custom_logging_callback
+from barcode_service.spring_config import (
+    SpringConfigException,
+    get_configurations_from_cloud8_spring_config_service)
 from barcode_service.synchronization import ShutDownSignal
+from barcode_service.version import SERVICE_VERSION
 from barcode_service.zbarreader import zbar_barcode_extractor
 
 RESOURCES_MODULE = "barcode_service.resources"
@@ -34,6 +39,12 @@ CONSUMER_SCHEMA = "reader.avsc"
 
 DEFAULT_SCANNER_MAX_WAIT_PERIOD = 1.0 # Default Scanner Waiting Time
 DEFAULT_SCANNER_MAX_RETRIES = 5 # Default Scanner Maximum Number of Retries
+
+logging.basicConfig(
+    format='[{asctime:^s}][{levelname:^8s}][{name:s}|{funcName:s}|{lineno:d}]: {message:s}',
+    datefmt='%Y/%m/%d|%H:%M:%S (%Z)',
+    style='{', level=logging.DEBUG
+)
 
 _log = logging.getLogger(__name__)
 
@@ -133,41 +144,59 @@ def main():
     """
         This is the service entry point
     """
-    sys.excepthook = __log_stracktrace # Main thread exception hook
-    threading.excepthook = __log_thread_stacktrace # threads exception hook
+    try:
+        sys.excepthook = __log_stracktrace # Main thread exception hook
+        threading.excepthook = __log_thread_stacktrace # threads exception hook
 
-    shutdown_signal = ShutDownSignal() # Shared with all workers for orderly shutdown
+        shutdown_signal = ShutDownSignal() # Shared with all workers for orderly shutdown
 
-    # Setting Signals for orderly shutdown
-    # This will call the ShutDownSignal object and propagate the shutdown signal to all registered threads
-    for sig in (SIGTERM, SIGINT):
-        register_signal(sig, (lambda signum, frame, shutdown_signal=shutdown_signal: __signal_cb(signum, frame, shutdown_signal)))
+        # Setting Signals for orderly shutdown
+        # This will call the ShutDownSignal object and propagate the shutdown signal to all registered threads
+        for sig in (SIGTERM, SIGINT):
+            register_signal(sig, (lambda signum, frame, shutdown_signal=shutdown_signal: __signal_cb(signum, frame, shutdown_signal)))
 
-    arguments_parser = parse_arguments()
-    program_arguments = arguments_parser.parse_args()
+        arguments_parser = parse_arguments()
+        program_arguments = arguments_parser.parse_args()
+        environment_configurations = get_environment_variable_configurations()
 
-    conf = ConfUtil(
-        conf_path = program_arguments.service_config_location,
-        log_path = program_arguments.log_config_location
-    )
+        if program_arguments.config_files:
+            service_configuration = program_arguments.service_config_location
+            logger_configuration = program_arguments.log_config_location
+        elif program_arguments.spring_config:
+            spring_configurations = get_configurations_from_cloud8_spring_config_service(
+                environment_configurations.spring_config_host, environment_configurations.spring_config_label
+            )
+            service_configuration = spring_configurations.barcode_service_configuration
+            logger_configuration = spring_configurations.barcode_logger_configuration
+        else:
+            critical_error = f"Something is wrong with (config_files, spring_config) CLI parsed values: [{program_arguments.__dict__}]."
+            _log.critical(critical_error)
+            sys.exit(critical_error)
 
-    logging.config.dictConfig(conf.log_conf)
+        conf = ConfUtil(
+            conf_path = service_configuration,
+            log_path = logger_configuration
+        )
+        logging.config.dictConfig(conf.log_conf)
 
-    _log.info(f'Service Configuration Options: "{conf.conf}"')
-    _log.info(f'Logging Configuration Options: "{conf.log_conf}"')
-    _log.info(f'Barcode Decoder Service: Version [{SERVICE_VERSION}]')
+        _log.info(f'Environment Configurations: "{environment_configurations}"')
+        _log.info(f'Service Configuration Options: "{conf.conf}"')
+        _log.info(f'Logging Configuration Options: "{conf.log_conf}"')
+        _log.info(f'Barcode Decoder Service: Version [{SERVICE_VERSION}]')
 
+        thread_cnt = conf.conf["thread_cnt"]
+        _log.info(f"Total thread count: {thread_cnt}")
+        ps: List[Thread] = []
+        for i in range(thread_cnt):
+            p = Thread(name=f"Decoder {i}", target=_thread_main, args=(conf.conf, shutdown_signal))
+            ps.append(p)
+            p.start()
+            _log.info(f"Thread [{p.name}] with id [{p.native_id}] has started")
 
-    thread_cnt = conf.conf["thread_cnt"]
-    _log.info(f"Total thread count: {thread_cnt}")
-    ps: List[Thread] = []
-    for i in range(thread_cnt):
-        p = Thread(name=f"Decoder {i}", target=_thread_main, args=(conf.conf, shutdown_signal))
-        ps.append(p)
-        p.start()
-        _log.info(f"Thread [{p.name}] with id [{p.native_id}] has started")
-
-    for p in ps:
-        _log.info(f"Waiting for thread [{p.name}] with ID [{p.native_id}] to terminate.")
-        p.join()
-    _log.info("Barcode Service is terminating. Goodbye.")
+        for p in ps:
+            _log.info(f"Waiting for thread [{p.name}] with ID [{p.native_id}] to terminate.")
+            p.join()
+        _log.info("Barcode Service is terminating. Goodbye.")
+    except SpringConfigException as ex:
+        _log.error(ex)
+        sys.exit(str(ex))

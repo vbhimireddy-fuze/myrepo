@@ -16,9 +16,13 @@ class EventProducer:
         self.conf = conf
         self.topic = conf['topic']
         self.enc = AvroEnc(schema)
-        producer_config = dict(filter(lambda e: e[0] in ('bootstrap.servers',), self.conf.items()))
-        producer_config['transactional.id'] = f"barcode-transfer-{uuid4()}" # Unique IDs per producers is required to avoid Transaction Fencing
-        self.producer = Producer(**producer_config)
+
+        self.producer = Producer(
+            **{
+                'bootstrap.servers': conf['bootstrap']['servers'],
+                'transactional.id': f"barcode-service-{uuid4()}",
+            }
+        )
         self.producer.init_transactions()
 
     def send(self, event: KafkaMessage) -> None:

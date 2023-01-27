@@ -1,5 +1,5 @@
 # coding=utf-8
-from argparse import ArgumentParser, ArgumentTypeError
+from argparse import ArgumentParser, ArgumentTypeError, SUPPRESS
 from pathlib import Path
 from barcode_service.version import SERVICE_VERSION
 
@@ -18,18 +18,26 @@ def parse_arguments() -> ArgumentParser:
         return loc
 
     parser = ArgumentParser(prog="barcode_service", description=f"Barcode Service v{SERVICE_VERSION}")
-    parser.add_argument(
+    subparsers = parser.add_subparsers(help='sub-command help')
+    # create the parser for the "a" command
+    config_files_parser = subparsers.add_parser('config_files', help='Runs Barcode Service using config files')
+    spring_config_parser = subparsers.add_parser('spring_config', help='Runs Barcode Service using configurations from Spring Config service')
+    spring_config_parser.add_argument("--spring_config", help=SUPPRESS, default=True)
+    spring_config_parser.add_argument("--config_files", help=SUPPRESS, default=False)
+    config_files_parser.add_argument(
         "-sl",
         "--service_config_location",
         help="Service configuration (YAML) file path.",
         required=True,
         type=validate_file_path,
     )
-    parser.add_argument(
+    config_files_parser.add_argument(
         "-ll",
         "--log_config_location",
         help="Log configuration (YAML) file path.",
         required=True,
         type=validate_file_path,
     )
+    config_files_parser.add_argument("--spring_config", help=SUPPRESS, default=False)
+    config_files_parser.add_argument("--config_files", help=SUPPRESS, default=True)
     return parser
