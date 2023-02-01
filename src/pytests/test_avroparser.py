@@ -1,9 +1,11 @@
 from barcode_service.avroparser import AvroEnc, AvroDec
-
+from importlib.resources import open_text as open_resource_text
 
 def test_enc_dec():
-    with open('../barcode_service/resources/reader.avsc', encoding="utf-8") as file:
-        schema_txt = file.read()
+    # Loading Producer Schema
+    with open_resource_text("barcode_service.resources", "reader.avsc") as resource_file:
+        schema_txt = resource_file.read()
+
     enc = AvroEnc(schema_txt)
     dec = AvroDec(schema_txt)
     msg = {

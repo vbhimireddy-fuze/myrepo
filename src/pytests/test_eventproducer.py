@@ -1,6 +1,8 @@
-from unittest.mock import patch, MagicMock
-from barcode_service.eventproducer import EventProducer
+from importlib.resources import open_text as open_resource_text
+from unittest.mock import MagicMock, patch
+
 from barcode_service.event_data import KafkaMessage
+from barcode_service.eventproducer import EventProducer
 
 
 def test_send():
@@ -9,10 +11,13 @@ def test_send():
         m_pro = MagicMock()
         producer.return_value = m_pro
 
-        with open('../barcode_service/resources/producer.avsc', encoding="utf-8") as file:
-            schema_txt = file.read()
+        with open_resource_text("barcode_service.resources", "producer.avsc") as resource_file:
+            schema_txt = resource_file.read()
 
-        conf = {"topic":"t1", "bootstrap.servers":"localhost"}
+        conf = {
+            "topic":"t1",
+            "bootstrap": { "servers": "localhost"},
+        }
         pro = EventProducer(conf, schema_txt)
 
         fax = {

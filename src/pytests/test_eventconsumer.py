@@ -1,8 +1,10 @@
 import threading
 import time
-from unittest.mock import patch, MagicMock
-from barcode_service.eventconsumer import EventConsumer
+from importlib.resources import open_text as open_resource_text
+from unittest.mock import MagicMock, patch
+
 from barcode_service.avroparser import AvroEnc
+from barcode_service.eventconsumer import EventConsumer
 
 
 def test_run():
@@ -11,11 +13,17 @@ def test_run():
         consumer.return_value = m_con
         m_con.poll.return_value = MockMsg()
 
-        with open('../barcode_service/resources/reader.avsc', encoding="utf-8") as file:
-            schema_txt = file.read()
+        with open_resource_text("barcode_service.resources", "reader.avsc") as resource_file:
+            schema_txt = resource_file.read()
 
-        conf = {"topics":["t1"], "bootstrap.servers":"localhost", "timeout": 10,
-            "is_confluent": True}
+        conf = {
+            "topics":["t1"],
+            "bootstrap": {"servers":"localhost"},
+            "group": {"id" : "barcode"},
+            "auto": {"offset": {"reset": "earliest"}, },
+            "timeout": 10,
+            "is_confluent": True,
+        }
         handler = MagicMock()
         con = EventConsumer(conf, schema_txt, handler)
 
@@ -34,8 +42,8 @@ class MockMsg():
         return False
 
     def value(self):
-        with open('../barcode_service/resources/reader.avsc', encoding="utf-8") as file:
-            schema_txt = file.read()
+        with open_resource_text("barcode_service.resources", "reader.avsc") as resource_file:
+            schema_txt = resource_file.read()
         enc = AvroEnc(schema_txt)
         msg = {
             "uuid":"579182d9-d827-435a-a91e-5ab6af28b5fb",

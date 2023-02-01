@@ -1,8 +1,10 @@
 from pathlib import Path
 from barcode_service.confutil import ConfUtil
 
+CONFIGURATIONS_LOCATION = Path(__file__).parent / "resources" / "configurations"
+
 def test_conf():
-    conf = ConfUtil(Path("conf.yaml"), Path("log.yaml"))
+    conf = ConfUtil(CONFIGURATIONS_LOCATION / "conf.yaml", CONFIGURATIONS_LOCATION / "log.yaml")
     expected = {
         "user_id":"ipbx",
         "thread_cnt":1,
