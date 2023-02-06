@@ -1,0 +1,62 @@
+version: "0.1"
+
+image: docker.8x8.com:5000/8x8/hyperloop/centos7/python3.10:stable
+
+buildInfo:
+  buildName: faas-barcode
+  buildDescription: faas-barcode
+
+sonar:
+  qgName: faas-barcode
+  projectName: faas-barcode
+  blockerIssueThreshold: 50
+  coverageThreshold: 0
+  smellsCountThreshold: 5000
+  unitTestSuccessThreshold: 0
+  additionalFlags: >
+    -Dsonar.python.version=3.10
+    -Dsonar.python.pylint.reportPaths=pylint.txt
+    -Dsonar.python.coverage.reportPaths=coverage.xml
+
+install:
+  - sudo yum install -y zbar-devel librdkafka1 librdkafka-devel cmake python3-setuptools gcc
+  - python3 -m pip install coverage 
+stages:
+  releaseArtifactRegex: (^master|^release.*)
+  releaseRepositoryRegex: (^master|^release.*)
+  ci:
+    enabled: true
+  cd:
+    enabled: false
+  verify:
+    lint:
+      - python3 -m venv --copies .venv
+      - source ./.venv/bin/activate
+      - pip install -v .[dev] pylint-exit
+      - pylint --output-format=parseable:pylint.txt ./src || pylint-exit $?
+    unit:
+      - source ./.venv/bin/activate
+      - pip install -v .[dev]
+      - coverage run -m pytest
+      - coverage xml
+  security:
+    branch: ^(.*)$
+    sonarRegex: ^(.*)$
+    security:
+      sh:
+        - echo 'Execute security command'
+    quality:
+      sh:
+        - echo 'Execute quality command'
+  publish:
+    branch: ^(master|release.*|hotfix.*|develop|feature.*)$
+    artifact:
+      sh:
+        - git rev-parse --short HEAD | tee GITSHORTHASH
+        - echo $(date "+%Y.%j.%s") | tee APPVERSION
+        - helm/chart_version.sh $(cat APPVERSION) $ART_VERSION-$GIT_SHORT_COMMIT
+      docker:
+        - build 8x8/faas-barcode:$ART_VERSION-$GIT_SHORT_COMMIT ./ ./Dockerfile
+        - push 8x8/faas-barcode:$ART_VERSION-$GIT_SHORT_COMMIT
+      helm3:
+        - push helm/faas-barcode

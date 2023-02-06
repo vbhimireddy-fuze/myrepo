@@ -10,11 +10,18 @@
 !/.github/
 !/src/
 !/config_samples/
+!/resources/
+!/helm/
+!/k8s/
 
 # and don't ignore these specific files
 !/.gitignore
 !/README.md
 !/development_requirements.txt
 !/requirements.txt
-!/pyproject.toml
 !/testsamples
+!/pyproject.toml
+!/Dockerfile
+!/Dockerfile-LintAndTests
+!/Dockerfile-Nothing
+!/pipeline.yml

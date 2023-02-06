@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faas-barcode-deployment
+  labels:
+    app: {{ .Values.appname }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appname }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appname }}
+    spec:
+      containers:
+      - command:
+        - barcode_service 
+        - spring_config
+        envFrom:
+        - configMapRef:
+            name: cloud8-config
+        env:
+        - name: SPRING_CLOUD_CONFIG_LABEL
+          value: {{ .Values.SpringCloudConfigLabel }}
+        image: {{ .Values.faasBarcode.fassBarcode.image.repository }}/{{ .Values.faasBarcode.fassBarcode.image.name }}:{{ .Values.faasBarcode.fassBarcode.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: Always
+        name: fass-barcode
+        resources: {{- toYaml .Values.faasBarcode.fassBarcode.resources | nindent 10 }}
+        volumeMounts:
+        - mountPath: /apps/ipbx/faxserver-docs/
+          name: faxdocs
+        workingDir: /apps/barcode
+      imagePullSecrets:
+      - name: es-ecr
+      volumes:
+      - name: faxdocs
+        nfs:
+          path: {{ .Values.nfspath }}
+          server: {{ .Values.nfshost }}

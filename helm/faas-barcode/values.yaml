@@ -1,0 +1,21 @@
+faasBarcode:
+  fassBarcode:
+    image:
+      repository: 868580389443.dkr.ecr.us-east-1.amazonaws.com
+      name: 8x8/faas-barcode
+      tag: IMGTAG
+    resources:
+      limits:
+        cpu: "4"
+        memory: 4Gi
+      requests:
+        cpu: 250m
+        memory: 1Gi
+  replicas: 2
+kubernetesClusterDomain: cluster.local
+env: acceptance
+SpringCloudConfigLabel: group/acceptance/barcode-service
+replicas: 1
+appname: faas-barcode
+nsfhost: 100.127.160.8
+nfspath: /faxserver-docs
