@@ -178,11 +178,14 @@ def main():
             log_path = logger_configuration
         )
         logging.config.dictConfig(conf.log_conf)
-
+        temp_config = {}
+        temp_config.update(conf.conf)
+        del temp_config["db"]["password"] # Prevent logging the password
         _log.info(f'Environment Configurations: "{environment_configurations}"')
-        _log.info(f'Service Configuration Options: "{conf.conf}"')
+        _log.info(f'Service Configuration Options: "{temp_config}"')
         _log.info(f'Logging Configuration Options: "{conf.log_conf}"')
         _log.info(f'Barcode Decoder Service: Version [{SERVICE_VERSION}]')
+        del temp_config
 
         thread_cnt = conf.conf["thread_cnt"]
         _log.info(f"Total thread count: {thread_cnt}")
