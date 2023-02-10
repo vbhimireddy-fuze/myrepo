@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Generator, Tuple
 
-import cv2
+from PIL import Image, ImageSequence, UnidentifiedImageError
 from pyzbar.pyzbar import PyZbarError
 from pyzbar.pyzbar import decode as pyzbar_decode
 
@@ -17,11 +17,12 @@ _log = logging.getLogger(__name__)
 
 
 def zbar_barcode_extractor(image_location: Path) -> Generator[Tuple[int, str, str], None, None]:
-    ret, imgs = cv2.imreadmulti(str(image_location.absolute()), [], cv2.IMREAD_REDUCED_COLOR_2)
-    if ret is False:
-        raise ScanningFailureException(f"Cannot process image at location [{image_location.absolute()}]")
+    try:
+        images = Image.open(str(image_location.absolute()), mode = 'r')
+    except (UnidentifiedImageError, FileNotFoundError) as ex:
+        raise ScanningFailureException(f"Cannot process image at location [{image_location.absolute()}]") from ex
 
-    for image_page, image in enumerate(imgs, start = 1):
+    for image_page, image in enumerate(ImageSequence.Iterator(images), start=1):
         try:
             for result in pyzbar_decode(image):
                 data_type: str = result.type

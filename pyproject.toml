@@ -74,4 +74,3 @@ disable = [
 enable = [
     "W1201", # (logging-not-lazy)
 ]
-generated-members = "cv2.*"
