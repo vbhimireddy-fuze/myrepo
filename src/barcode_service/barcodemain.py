@@ -4,6 +4,7 @@ import logging.config
 import os
 import sys
 import threading
+from copy import deepcopy
 from importlib.resources import open_text as open_resource_text
 from pathlib import Path
 from signal import SIGINT, SIGTERM
@@ -178,8 +179,7 @@ def main():
             log_path = logger_configuration
         )
         logging.config.dictConfig(conf.log_conf)
-        temp_config = {}
-        temp_config.update(conf.conf)
+        temp_config = deepcopy(conf.conf)
         del temp_config["db"]["password"] # Prevent logging the password
         _log.info(f'Environment Configurations: "{environment_configurations}"')
         _log.info(f'Service Configuration Options: "{temp_config}"')
