@@ -17,5 +17,5 @@ env: acceptance
 SpringCloudConfigLabel: group/acceptance/barcode-service
 replicas: 1
 appname: faas-barcode
-nsfhost: 100.127.160.8
+nfshost: 100.127.160.8
 nfspath: /faxserver-docs
