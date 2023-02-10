@@ -1,6 +1,7 @@
 from pathlib import Path
+
+from barcode_service.barcodereader import Barcode, BarcodeReader
 from barcode_service.zbarreader import zbar_barcode_extractor
-from barcode_service.barcodereader import BarcodeReader, Barcode
 
 TEST_DATA_LOCATION = Path(__file__).parent / "resources" / "images"
 

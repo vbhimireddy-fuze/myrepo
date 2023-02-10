@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock
-from barcode_service.eventhandler import EventHandler
+
 from barcode_service.barcodereader import Barcode
 from barcode_service.event_data import KafkaMessage
+from barcode_service.eventhandler import EventHandler
+
 
 def barcoder(path):
     print("read path:", path)

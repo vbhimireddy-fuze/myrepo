@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from barcode_service.confutil import ConfUtil
 
 CONFIGURATIONS_LOCATION = Path(__file__).parent / "resources" / "configurations"

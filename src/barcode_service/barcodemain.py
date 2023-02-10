@@ -43,7 +43,7 @@ DEFAULT_SCANNER_MAX_RETRIES = 5 # Default Scanner Maximum Number of Retries
 logging.basicConfig(
     format='[{asctime:^s}][{levelname:^8s}][{name:s}|{funcName:s}|{lineno:d}]: {message:s}',
     datefmt='%Y/%m/%d|%H:%M:%S (%Z)',
-    style='{', level=logging.DEBUG
+    style='{', level=logging.INFO
 )
 
 _log = logging.getLogger(__name__)

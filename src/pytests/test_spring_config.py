@@ -13,7 +13,9 @@ from barcode_service.spring_config import (
 _YAML_MOCK_DATA='''
 yaml_test_data: "testing data"
 '''
-
+_SPRING_CONFIG_HOST_LOCATION_MOCK = "https://springconfigmock"
+_SPRING_CONFIG_LABEL_MOCK = "label_mock"
+_REQUESTS_GET = "requests.get"
 
 @dataclass
 class RequestsResultMock():
@@ -55,8 +57,8 @@ def test_get_data_from_mock_of_spring_config_service(monkeypatch):
     }
 
     with monkeypatch.context() as patch:
-        patch.setattr("requests.get", (lambda url, timeout, result=requests_fake_result: requests_get_mock(result, url, timeout)))
-        spring_configurations = get_configurations_from_cloud8_spring_config_service("http://springconfigmock", "label_mock")
+        patch.setattr(_REQUESTS_GET, (lambda url, timeout, result=requests_fake_result: requests_get_mock(result, url, timeout)))
+        spring_configurations = get_configurations_from_cloud8_spring_config_service(_SPRING_CONFIG_HOST_LOCATION_MOCK, _SPRING_CONFIG_LABEL_MOCK)
         assert spring_configurations.barcode_service_configuration == _YAML_MOCK_DATA
         assert spring_configurations.barcode_logger_configuration == _YAML_MOCK_DATA
 
@@ -74,10 +76,10 @@ def test_exception_from_get_service_config(monkeypatch):
     requests_fake_result = { "service_config": service_config_request_mock }
 
     with monkeypatch.context() as patch:
-        patch.setattr("requests.get", (lambda url, timeout, result=requests_fake_result: requests_get_mock(result, url, timeout)))
+        patch.setattr(_REQUESTS_GET, (lambda url, timeout, result=requests_fake_result: requests_get_mock(result, url, timeout)))
 
         with pytest.raises(SpringConfigException) as ex:
-            get_configurations_from_cloud8_spring_config_service("http://springconfigmock", "label_mock")
+            get_configurations_from_cloud8_spring_config_service(_SPRING_CONFIG_HOST_LOCATION_MOCK, _SPRING_CONFIG_LABEL_MOCK)
             assert "Could not obtain service configuration file from Spring Config Service:" in str(ex)
             assert f"Error Code: [{service_config_request_mock.status_code}]" in str(ex)
             assert f"Error Reason: [{service_config_request_mock.reason}]" in str(ex)
@@ -104,10 +106,10 @@ def test_exception_from_get_logger_config(monkeypatch):
     }
 
     with monkeypatch.context() as patch:
-        patch.setattr("requests.get", (lambda url, timeout, result=requests_fake_result: requests_get_mock(result, url, timeout)))
+        patch.setattr(_REQUESTS_GET, (lambda url, timeout, result=requests_fake_result: requests_get_mock(result, url, timeout)))
 
         with pytest.raises(SpringConfigException) as ex:
-            get_configurations_from_cloud8_spring_config_service("http://springconfigmock", "label_mock")
+            get_configurations_from_cloud8_spring_config_service(_SPRING_CONFIG_HOST_LOCATION_MOCK, _SPRING_CONFIG_LABEL_MOCK)
             assert "Could not obtain logger configuration file from Spring Config Service:" in str(ex)
             assert f"Error Code: [{logger_config_request_mock.status_code}]" in str(ex)
             assert f"Error Reason: [{logger_config_request_mock.reason}]" in str(ex)
@@ -123,8 +125,8 @@ def test_connection_error_exception_from_get_service_config(monkeypatch):
         raise exceptions.ConnectionError("Mockup Error")
 
     with monkeypatch.context() as patch:
-        patch.setattr("requests.get", (lambda *_, **_1: requests_get_throws_connection_error_mockup()))
+        patch.setattr(_REQUESTS_GET, (lambda *_, **_1: requests_get_throws_connection_error_mockup()))
 
         with pytest.raises(SpringConfigException) as ex:
-            get_configurations_from_cloud8_spring_config_service("http://springconfigmock", "label_mock")
+            get_configurations_from_cloud8_spring_config_service(_SPRING_CONFIG_HOST_LOCATION_MOCK, _SPRING_CONFIG_LABEL_MOCK)
             assert "Could not connect to Spring Config Service" in str(ex)

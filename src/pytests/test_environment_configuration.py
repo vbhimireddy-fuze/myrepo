@@ -18,7 +18,7 @@ def test_get_mockup_configuration(monkeypatch):
     """
         Tests the default values provided by get_environment_variable_configurations
     """
-    MOCK_LOCATION = 'http://mock_location:12345'
+    MOCK_LOCATION = 'https://mock_location:12345'
     MOCK_LABEL = 'mock_label'
 
     with monkeypatch.context() as patch:

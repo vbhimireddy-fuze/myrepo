@@ -1,6 +1,8 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from barcode_service.faxdao import FaxDao
 from barcode_service.service_data import Barcode
+
 
 def test_save():
     with patch("barcode_service.faxdao.pooling.MySQLConnectionPool") as pool:
@@ -35,7 +37,20 @@ def test__serialize_barcodes():
         dao = FaxDao(conf)
 
         codes = [Barcode(1, "code128", "this is barcode")]
-        result = dao._serialize_barcodes(codes)
+        fake_faxid = "12345"
+        expected_serialization_value = "1¹code128¹this is barcode"
+        saved_barcodes_text = ""
+        saved_fax_id = ""
 
-        expected = ('1¹code128¹this is barcode', [])
-        assert expected == result
+        def fake_execute(_, query_data_tuple):
+            nonlocal saved_barcodes_text, saved_fax_id
+            (saved_barcodes_text, saved_fax_id) = query_data_tuple
+
+
+        cur = MagicMock()
+        cur.execute = fake_execute
+        con.cursor.return_value.__enter__.return_value = cur
+
+        dao.save(fake_faxid, codes)
+        assert saved_barcodes_text == expected_serialization_value
+        assert saved_fax_id == fake_faxid

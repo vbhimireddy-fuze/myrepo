@@ -13,7 +13,7 @@ _log = logging.getLogger(__name__)
 class BarcodeReader:
     @dataclass
     class BarcodeConfiguration:
-        faxes_location: Path = None
+        faxes_location: Path
 
     def __init__(self, config: BarcodeConfiguration, barcode_extractor: Generator[Tuple[int, str, str], None, None]) -> None:
         self.__barcode_extractor = barcode_extractor

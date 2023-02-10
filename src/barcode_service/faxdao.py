@@ -74,7 +74,7 @@ class FaxDao(AbstractDao):
                 cur.execute(_UPDATE_QUERY, (barcodes_text, fax_id))
                 con.commit()
 
-    def _serialize_barcodes(self, barcodes: Iterable[Barcode]) -> str:
+    def _serialize_barcodes(self, barcodes: Iterable[Barcode]) -> tuple[list[str], list[Barcode]]:
         available_space = self.__max_column_size
         barcodes_prep = []
         leftovers = []
