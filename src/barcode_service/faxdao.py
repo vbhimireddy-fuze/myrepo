@@ -20,18 +20,13 @@ SET barcodes = %s
 WHERE faxId = %s
 """
 
-_BARCODES_FIELD_TYPE_QUERY = """SELECT data_type as data_type
-FROM information_schema.columns
-WHERE  table_name = 't_fax' AND column_name = 'barCodes'
-LIMIT 1
+_BARCODES_COLUMN_MAX_LENGTH = """
+select CHARACTER_MAXIMUM_LENGTH as barcodes_max_length
+from information_schema.columns
+where table_schema = DATABASE()
+    AND table_name = 't_fax'
+    AND COLUMN_NAME = 'barCodes'
 """
-
-_MAXIMUM_TEXT_TYPES_LENGHT = {
-    "tinytext": 256,
-    "text": 65535,
-    "mediumtext": 16777215,
-    "longtext": 4294967295
-}
 
 
 class AbstractDao(ABC):
@@ -46,15 +41,10 @@ class FaxDao(AbstractDao):
             self.__pool = pooling.MySQLConnectionPool(pool_name="faxdb", **conf)
             with self.__pool.get_connection() as con:
                 with con.cursor(named_tuple=True) as cur:
-                    cur.execute(_BARCODES_FIELD_TYPE_QUERY)
+                    cur.execute(_BARCODES_COLUMN_MAX_LENGTH)
                     if not cur.with_rows:
-                        raise FailedInitializationException("Could not obtain barCodes field type from database")
-                    field_type: str = next(cur).data_type
-                    con.commit()
-                    field_type = field_type.lower()
-                    self.__max_column_size = _MAXIMUM_TEXT_TYPES_LENGHT.get(field_type, None)
-                    if self.__max_column_size is None:
-                        raise FailedInitializationException(f"Database barCodes field type is [{field_type}]. Accepted types are [{tuple(_MAXIMUM_TEXT_TYPES_LENGHT.keys())}]")
+                        raise FailedInitializationException("Could not obtain barCodes max length from database")
+                    self.__max_column_size: str = next(cur).barcodes_max_length
 
                     _log.info(f"Maximum barcode serialized data length is {self.__max_column_size}")
         except DatabaseError as ex:

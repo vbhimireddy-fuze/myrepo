@@ -23,7 +23,7 @@ def test_save():
         assert con.commit.called
 
 
-def test__serialize_barcodes():
+def test_serialize_barcodes():
     with patch("barcode_service.faxdao.pooling.MySQLConnectionPool") as pool:
         m_pool = MagicMock()
         pool.return_value = m_pool
@@ -31,7 +31,7 @@ def test__serialize_barcodes():
         m_pool.get_connection.return_value.__enter__.return_value = con
         cur = MagicMock()
         con.cursor.return_value.__enter__.return_value = cur
-        cur.__next__.return_value.data_type = "tinytext"
+        cur.__next__.return_value.barcodes_max_length = 0xFFFF
 
         conf = {"host": "localhost", "database":"db", "pool_size": 10}
         dao = FaxDao(conf)
