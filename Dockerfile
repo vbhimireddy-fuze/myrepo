@@ -28,7 +28,7 @@ WORKDIR /package-build/
 COPY . .
 RUN pip3 install build
 RUN pip3 install -r requirements.txt
-RUN GV="$(cat APPVERSION)+$(cat GITSHORTHASH)" && sed -i "s/99.99.99999+fffffff/$GV/g" src/barcode_service/__init__.py
+RUN GV="$(cat APPVERSION)+$(cat GITSHORTHASH)" && sed -i "s/99.99.99999+fffffff/$GV/g" src/barcode_service/version.py
 RUN pip3 wheel -w ./build_dir .
 
 FROM docker.8x8.com:5000/8x8/hyperloop/centos7/python3.10:stable as release
