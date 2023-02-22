@@ -1,0 +1,25 @@
+"""
+    This source file defines default constants
+"""
+
+__all__ = [
+    "RESOURCES_MODULE",
+    "PRODUCER_SCHEMA",
+    "CONSUMER_SCHEMA",
+    "DEFAULT_SCANNER_MAX_WAIT_PERIOD",
+    "DEFAULT_SCANNER_MAX_RETRIES",
+    "DEFAULT_REST_API_HOST",
+    "DEFAULT_REST_API_PORT",
+    "DEFAULT_REST_API_MAX_CONCURRENT_REQUESTS",
+]
+
+RESOURCES_MODULE = "barcode_service.resources"
+PRODUCER_SCHEMA = "producer.avsc"
+CONSUMER_SCHEMA = "reader.avsc"
+
+DEFAULT_SCANNER_MAX_WAIT_PERIOD = 1.0 # Default Scanner Waiting Time
+DEFAULT_SCANNER_MAX_RETRIES = 5 # Default Scanner Maximum Number of Retries
+
+DEFAULT_REST_API_HOST = '0.0.0.0'
+DEFAULT_REST_API_PORT = '8000'
+DEFAULT_REST_API_MAX_CONCURRENT_REQUESTS = 500
