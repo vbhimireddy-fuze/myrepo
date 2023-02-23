@@ -4,7 +4,7 @@ import pathlib
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Path
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 
 from barcode_service.barcodereader import BarcodeReader
 from barcode_service.default_values import (
@@ -47,6 +47,10 @@ def start_and_wait_for_rest_api(conf, log_config, shutdown_signal: ShutDownSigna
     @app.get("/", include_in_schema=False)
     async def docs_redirect():
         return RedirectResponse(url='/docs')
+
+    @app.get("/health", include_in_schema=False)
+    async def health():
+        return Response()
 
     @app.on_event("shutdown")
     def shutdown_event():
