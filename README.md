@@ -1,5 +1,18 @@
 # Barcode Decoder Service
 
+## Sonar Badges
+[![Maintainability Rating](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=sqale_rating)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Quality Gate Status](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=alert_status)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Reliability Rating](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=reliability_rating)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Security Rating](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=security_rating)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Bugs](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=bugs)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Code Smells](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=code_smells)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Coverage](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=coverage)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Duplicated Lines (%)](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=duplicated_lines_density)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Lines of Code](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=ncloc)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Technical Debt](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=sqale_index)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+[![Vulnerabilities](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=vulnerabilities)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
+
 ## Introduction
 This is the repository for the BarCode Decoder Service for the Fax as a Service (FaaS) infrastructure.
 The purpose of this service is to detect barcodes present in faxes that are received by the FaaS and inject that information into the Fax Server database.
