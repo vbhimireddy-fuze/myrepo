@@ -25,7 +25,7 @@ class BarcodeReader:
 
         start_time = datetime.now()
         bar_codes = tuple(
-            (Barcode(page_number, data_type, value) for (page_number, data_type, value) in self.__barcode_extractor(full_file_path))
+            (Barcode(page_number, data_type, value, quality) for (page_number, data_type, value, quality) in self.__barcode_extractor(full_file_path))
         )
         end_time = datetime.now()
         duration = end_time - start_time
