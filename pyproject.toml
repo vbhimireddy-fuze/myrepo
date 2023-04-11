@@ -46,6 +46,10 @@ testpaths = [
     "src/pytests",
 ]
 python_files = ["test_*.py"]
+log_cli = "True"
+log_cli_level = "INFO"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli_format = "[%(asctime)s][%(name)s][%(lineno)d][%(threadName)s][%(levelname)s][%(message)s]"
 
 [tool.coverage.run]
 source = ["src/barcode_service"]

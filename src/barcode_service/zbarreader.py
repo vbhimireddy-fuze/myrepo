@@ -68,13 +68,12 @@ def zbar_barcode_extractor(image_location: Path) -> Generator[Tuple[int, str, st
         try:
             image = image.convert('L')
             barcodes_results: set[ZBarBarcode] = set(_zbar_decode_barcodes(image))
-            _log.info(f"Barcodes set from original image at page [{image_page}]: [{len(barcodes_results)}] - [{barcodes_results}] - file [{image_location}]")
+            _log.info(f"Barcodes scanned from original image at page [{image_page}]: Number: [{len(barcodes_results)}] | Total decoded: [{barcodes_results}] | File: [{image_location}]")
             for image_filter in _USING_FILTERS:
                 filtered_image = image.filter(image_filter)
                 for barcode in _zbar_decode_barcodes(filtered_image):
                     _update_barcode_with_highest_quality(barcodes_results, barcode)
-
-            _log.info(f"Final barcodes set after image enhancement at page [{image_page}]: [{len(barcodes_results)}] - [{barcodes_results}] - file [{image_location}]")
+                _log.info(f"Final barcodes scanned after image enhancement with filter [{image_filter}] at page [{image_page}]: Total decoded: [{len(barcodes_results)}] | Barcodes: [{barcodes_results}] | File: [{image_location}]")
             for barcode in barcodes_results:
                 _log.debug(
                     f"Yielding barcode information: "
