@@ -50,3 +50,18 @@ RUN chown ipbx:ipbx /apps
 
 # tar the directory if interested in artifacts (upload/copy those wherever needed)
 RUN rm -rf /package-build/*
+
+#Setting up td-agent
+RUN curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh | sh
+RUN td-agent-gem install -N fluent-plugin-oci-logging-analytics -v 2.0.0
+RUN td-agent-gem install -N fluent-plugin-oci-logging -v 1.0.12
+RUN td-agent-gem install -N fluent-plugin-go-audit-parser -v 0.1.2
+RUN td-agent-gem install -N fluent-plugin-flowcounter -v 1.3.0
+RUN td-agent-gem install -N fluent-plugin-concat -v 2.5.0
+RUN mkdir -p /var/lib/fluent_oci_outplugin/pos #Unsure if this is needed
+COPY log_config/td-agent /etc/
+COPY log_config/oci/* /var/lib/td-agent/.oci/
+COPY log_config/update_td-agent.sh /root/
+
+WORKDIR /root
+ENTRYPOINT ["/root/update_td-agent.sh"]
