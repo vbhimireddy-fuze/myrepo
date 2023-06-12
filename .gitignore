@@ -13,6 +13,7 @@
 !/resources/
 !/helm/
 !/k8s/
+!/log_config/
 
 # and don't ignore these specific files
 !/.gitignore
