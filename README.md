@@ -1,5 +1,6 @@
 # Barcode Decoder Service
 
+
 ## Sonar Badges
 [![Maintainability Rating](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=sqale_rating)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
 [![Quality Gate Status](https://sonar.8x8.com/api/project_badges/measure?project=com.8x8%3Afaas-barcode&metric=alert_status)](https://sonar.8x8.com/dashboard?id=com.8x8%3Afaas-barcode)
