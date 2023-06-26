@@ -20,7 +20,7 @@
 FROM docker.8x8.com:5000/8x8/hyperloop/centos7/python3.10:stable AS pythonbuild
 #RUN yum update -y
 RUN yum install -y zbar-devel
-RUN yum install -y cmake python3-setuptools
+RUN yum install -y cmake #python3-setuptools
 RUN yum install -y gcc wget 
 RUN yum install -y librdkafka1 librdkafka-devel
 
