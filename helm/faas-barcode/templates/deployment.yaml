@@ -15,10 +15,10 @@ spec:
         app: {{ .Values.appname }}
     spec:
       containers:
+      - command: ['sh', '-c', '/apps/barcode/start-td-agent.sh']
       - command:
         - barcode_service 
         - spring_config
-        - sh start-td-agent.sh
         envFrom:
         - configMapRef:
             name: cloud8-config
