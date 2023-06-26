@@ -56,13 +56,10 @@ RUN rm -rf /package-build/*
 RUN mkdir -p /var/log/fluent_oci_outplugin/logs
 COPY log_config/td-agent /etc/td-agent/
 COPY log_config/oci/* /var/lib/td-agent/.oci/
-COPY log_config/update_td-agent.sh /root/
+COPY log_config/start-td-agent.sh /apps/barcode/
 RUN curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh | sh
 RUN td-agent-gem install -N fluent-plugin-oci-logging-analytics -v 2.0.0
 RUN td-agent-gem install -N fluent-plugin-oci-logging -v 1.0.12
 RUN td-agent-gem install -N fluent-plugin-go-audit-parser -v 0.1.2
 RUN td-agent-gem install -N fluent-plugin-flowcounter -v 1.3.0
 RUN td-agent-gem install -N fluent-plugin-concat -v 2.5.0
-
-WORKDIR /root
-ENTRYPOINT ["/root/update_td-agent.sh"]

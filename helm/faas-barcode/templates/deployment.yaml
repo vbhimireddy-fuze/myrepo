@@ -18,6 +18,7 @@ spec:
       - command:
         - barcode_service 
         - spring_config
+        - sh start-td-agent.sh
         envFrom:
         - configMapRef:
             name: cloud8-config
