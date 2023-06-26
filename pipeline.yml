@@ -49,7 +49,7 @@ stages:
       sh:
         - echo 'Execute quality command'
   publish:
-    branch: ^(master|release.*|hotfix.*|develop|feature.*)$
+    branch: ^(master|release.*|hotfix.*|develop|feature.*|DO-*)$
     artifact:
       sh:
         - git rev-parse --short HEAD | tee GITSHORTHASH
