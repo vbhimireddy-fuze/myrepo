@@ -52,7 +52,8 @@ RUN chown ipbx:ipbx /apps
 RUN rm -rf /package-build/*
 
 #Setting up td-agent
-RUN mkdir -p /var/lib/fluent_oci_outplugin/pos #Unsure if this is needed
+#RUN mkdir -p /var/lib/fluent_oci_outplugin/pos #Unsure if this is needed
+RUN mkdir -p /var/log/fluent_oci_outplugin/logs
 COPY log_config/td-agent /etc/td-agent/
 COPY log_config/oci/* /var/lib/td-agent/.oci/
 COPY log_config/update_td-agent.sh /root/
